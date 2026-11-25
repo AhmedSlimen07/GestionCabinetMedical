@@ -8,23 +8,30 @@ from django.core.exceptions import ValidationError
 class User(AbstractUser):
     pass
 
-number_validator = RegexValidator(r'^\d{8}$', message="Le Numéro doit contenir exactement 8 chiffres.")
+Phone_validator = RegexValidator(r'^\d{8}$', message="Le numéro de téléphone doit contenir exactement 8 chiffres.")
 
-def birth_date_validator(d):
+Cin_validator = RegexValidator(r'^\d{8}$', message="Le CIN doit contenir exactement 8 chiffres.")
+
+def validate_past_date(d):
     if d >= timezone.localdate():
-        raise ValidationError("La date de naissance doit être antérieur que la date d.")
+        raise ValidationError("La date de naissance doit être antérieure à la date du jour.")
 
-class Doctor(models.Model):
+class Doctor(User):
     license_number = models.CharField(max_length=6,unique=True,validators=[MinLengthValidator(6), MaxLengthValidator(6)])
-    phone = models.CharField(max_length=8, validators=[number_validator])
-    Specialty = models.ManyToManyField("AccountApp.Specialty", related_name='Doctors')
-
+    phone = models.CharField(max_length=8, validators=[Phone_validator])
+    specialties = models.ManyToManyField("AccountApp.Specialty", related_name='Doctors')
+    def __str__(self):
+        return f"Dr {self.first_name} {self.last_name}"
     
-class Patient(models.Model):
-    national_id = models.CharField(max_length=8,unique=True,validators=[number_validator])
-    phone = models.CharField(max_length=8, validators=[number_validator])
-    birth_date = models.DateField(validators=[birth_date_validator])
+class Patient(User):
+    national_id = models.CharField(max_length=8,unique=True,validators=[Cin_validator])
+    phone = models.CharField(max_length=8, validators=[Phone_validator])
+    birth_date = models.DateField(validators=[validate_past_date])
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
 
 class Specialty(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, unique=True)
+    def __str__(self):
+        return self.name
