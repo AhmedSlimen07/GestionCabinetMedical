@@ -27,6 +27,8 @@ class Appointment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        verbose_name = "appointment"
+        verbose_name_plural = "appointments"
         ordering = ['appointment_date']
         constraints = [models.UniqueConstraint(fields=['doctor', 'appointment_date'],name='unique_doctor_appointment_date', violation_error_message="Ce créneau est déjà réservé : le médecin a déjà un rendez-vous à cette date et à cette heure.",)]
 
