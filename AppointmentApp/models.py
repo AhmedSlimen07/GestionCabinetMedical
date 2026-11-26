@@ -16,16 +16,12 @@ class Appointment(models.Model):
     patient = models.ForeignKey(
         'AccountApp.Patient', on_delete=models.CASCADE, related_name='appointments'
     )
+    id = models.BigAutoField(primary_key=True)
     appointment_date = models.DateTimeField()
     duration_minutes = models.PositiveIntegerField(default=30)
-    reason = models.TextField()
-    status = models.CharField(
-        max_length=10, choices=Status.choices, default=Status.PENDING
-    )
-    prescription = models.FileField(
-        upload_to='prescriptions/', blank=True,
-        validators=[FileExtensionValidator(allowed_extensions=['pdf'])],
-    )
+    reason = models.TextField(max_length=255)
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
+    prescription = models.FileField(upload_to='prescriptions/', blank=True,validators=[FileExtensionValidator(allowed_extensions=['pdf'], message="Format de fichier non valide : seuls les documents au format PDF sont acceptés.")],)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -40,8 +36,6 @@ class Appointment(models.Model):
 
     def clean(self):
         super().clean()
-        # La règle ne s'applique qu'à la création ou si la date a changé :
-        # un rendez-vous passé reste modifiable (ex. ajout de l'ordonnance).
         if not self.appointment_date:
             return
         date_changed = True
