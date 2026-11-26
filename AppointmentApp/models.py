@@ -16,11 +16,12 @@ class Appointment(models.Model):
     patient = models.ForeignKey(
         'AccountApp.Patient', on_delete=models.CASCADE, related_name='appointments'
     )
+    
     id = models.BigAutoField(primary_key=True)
     appointment_date = models.DateTimeField()
     duration_minutes = models.PositiveIntegerField(default=30)
     reason = models.TextField(max_length=255)
-    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
+    status = models.CharField(max_length=50, choices=Status.choices, default=Status.PENDING)
     prescription = models.FileField(upload_to='prescriptions/', blank=True,validators=[FileExtensionValidator(allowed_extensions=['pdf'], message="Format de fichier non valide : seuls les documents au format PDF sont acceptés.")],)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
