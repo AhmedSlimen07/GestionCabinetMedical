@@ -16,7 +16,7 @@ class Appointment(models.Model):
     patient = models.ForeignKey(
         'AccountApp.Patient', on_delete=models.CASCADE, related_name='appointments'
     )
-    
+
     id = models.BigAutoField(primary_key=True)
     appointment_date = models.DateTimeField()
     duration_minutes = models.PositiveIntegerField(default=30)
@@ -28,12 +28,7 @@ class Appointment(models.Model):
 
     class Meta:
         ordering = ['appointment_date']
-        constraints = [
-            models.UniqueConstraint(
-                fields=['doctor', 'appointment_date'],
-                name='unique_doctor_appointment_date',
-            )
-        ]
+        constraints = [models.UniqueConstraint(fields=['doctor', 'appointment_date'],name='unique_doctor_appointment_date', violation_error_message="Ce créneau est déjà réservé : le médecin a déjà un rendez-vous à cette date et à cette heure.",)]
 
     def clean(self):
         super().clean()
@@ -41,14 +36,10 @@ class Appointment(models.Model):
             return
         date_changed = True
         if self.pk:
-            old = Appointment.objects.filter(pk=self.pk).values_list(
-                'appointment_date', flat=True
-            ).first()
+            old = Appointment.objects.filter(pk=self.pk).values_list('appointment_date', flat=True).first()
             date_changed = old != self.appointment_date
         if date_changed and self.appointment_date <= timezone.now():
-            raise ValidationError(
-                {'appointment_date': "La date du rendez-vous doit être postérieure à maintenant."}
-            )
+            raise ValidationError({'appointment_date': "La date du rendez-vous doit être postérieure à maintenant."})
 
     def __str__(self):
         return f"{self.patient} → {self.doctor} le {self.appointment_date:%d/%m/%Y %H:%M}"
